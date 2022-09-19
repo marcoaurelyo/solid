@@ -2,7 +2,12 @@
 
 namespace Daycoval.Solid.Domain.Services
 {
-    public class EstoqueService
+    public interface IEstoqueService
+    {
+        void SolicitarProduto(Produto produto);
+        void BaixarEstoque(Produto produto);
+    }
+    public class EstoqueService : IEstoqueService
     {
         public void SolicitarProduto(Produto produto)
         {

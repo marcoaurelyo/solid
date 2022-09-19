@@ -2,34 +2,50 @@
 using System.Net.Mail;
 using System.Runtime.InteropServices;
 using Daycoval.Solid.Domain.Entidades;
+using Daycoval.Solid.Domain.Impostos;
+using Daycoval.Solid.Domain.Impostos.TipoProduto;
 
 namespace Daycoval.Solid.Domain.Services
 {
     public class Pedido
     {
+        IEstoqueService _estoqueService;
+        IImpostometro _impostometro;
+        //Todo: Colocar a Classe Estoque como injeção de dependência
+        public Pedido(IEstoqueService estoque, IImpostometro impostometro)
+        {
+            this._estoqueService = estoque;
+            this._impostometro = impostometro;
+        }
+
+      
         public void EfetuarPedido(Carrinho carrinho, DetalhePagamento detalhePagamento, bool notificarClienteEmail,
             bool notificarClienteSms)
         {
+            #region Calcular Imposto
             foreach (var produto in carrinho.Produtos)
             {
                 if (produto.TipoProduto == TipoProduto.Alimentos)
                 {
-                    produto.ValorImposto = produto.Valor * 0.05M;
-                    carrinho.ValorTotalPedido += (produto.Valor + produto.ValorImposto) * produto.Quantidade;
+                    _impostometro.setImpostoStrategy(new AlimentoImposto());
+                    produto.ValorImposto = _impostometro.executarCalculoDoImposto(produto.Valor);
+                    carrinho.ValorTotalPedido += CalcularValorTotalPedido(produto);
                 }
                 else
                 {
                     if (produto.TipoProduto == TipoProduto.Eletronico)
                     {
-                        produto.ValorImposto = produto.Valor * 0.15M;
-                        carrinho.ValorTotalPedido += (produto.Valor + produto.ValorImposto) * produto.Quantidade;
+                        _impostometro.setImpostoStrategy(new EletronicoImposto());
+                        produto.ValorImposto = _impostometro.executarCalculoDoImposto(produto.Valor);
+                        carrinho.ValorTotalPedido += CalcularValorTotalPedido(produto);
                     }
                     else
                     {
                         if (produto.TipoProduto == TipoProduto.Superfulos)
                         {
-                            produto.ValorImposto = produto.Valor * 0.20M;
-                            carrinho.ValorTotalPedido += (produto.Valor + produto.ValorImposto) * produto.Quantidade;
+                            _impostometro.setImpostoStrategy(new SuperfulosImposto());
+                            produto.ValorImposto = _impostometro.executarCalculoDoImposto(produto.Valor);
+                            carrinho.ValorTotalPedido += CalcularValorTotalPedido(produto);
                         }
                         else
                         {
@@ -38,15 +54,18 @@ namespace Daycoval.Solid.Domain.Services
                     }
                 }
             }
+            #endregion
 
+            #region Pagamento
             if (detalhePagamento.FormaPagamento.Equals(FormaPagamento.CartaoCredito) ||
                 detalhePagamento.FormaPagamento.Equals(FormaPagamento.CartaoDebito))
             {
+
                 using (var gatewayPatamento = new GatewayPagamentoService())
                 {
                     gatewayPatamento.Login = "login";
                     gatewayPatamento.Senha = "senha";
-                    gatewayPatamento.FormaPagamentoCartao = (FormaPagamentoCartao) detalhePagamento.FormaPagamento;
+                    gatewayPatamento.FormaPagamentoCartao = (FormaPagamentoCartao)detalhePagamento.FormaPagamento;
                     gatewayPatamento.NomeImpresso = detalhePagamento.NomeImpressoCartao;
                     gatewayPatamento.AnoExpiracao = detalhePagamento.AnoExpiracao;
                     gatewayPatamento.MesExpiracao = detalhePagamento.MesExpiracao;
@@ -62,14 +81,14 @@ namespace Daycoval.Solid.Domain.Services
             {
                 InformarPagamento(carrinho);
             }
+            #endregion
 
-            var estoque = new EstoqueService();
-
+            #region Estoque
             if (carrinho.FoiPago)
             {
                 foreach (var produto in carrinho.Produtos)
                 {
-                    estoque.SolicitarProduto(produto);
+                    _estoqueService.SolicitarProduto(produto);
                 }
 
                 EntregarProdutos(carrinho);
@@ -83,14 +102,16 @@ namespace Daycoval.Solid.Domain.Services
             {
                 foreach (var produto in carrinho.Produtos)
                 {
-                    estoque.BaixarEstoque(produto);
+                    _estoqueService.BaixarEstoque(produto);
                 }
             }
             else
             {
                 throw new ExternalException("Os produtos não foram entregues.");
             }
+            #endregion
 
+            #region Notificar Clientes
             if (notificarClienteEmail)
             {
                 if (!string.IsNullOrWhiteSpace(carrinho.Cliente.Email))
@@ -116,13 +137,18 @@ namespace Daycoval.Solid.Domain.Services
                     smsService.EnviarSms();
                 }
             }
+            #endregion
         }
 
+        private decimal CalcularValorTotalPedido(Produto produto)
+        {
+            return (produto.Valor + produto.ValorImposto) * produto.Quantidade;
+        }
+   
         private void EntregarProdutos(Carrinho carrinho)
         {
             carrinho.FoiEntregue = true;
         }
-
         private void InformarPagamento(Carrinho carrinho)
         {
             carrinho.FoiPago = true;
