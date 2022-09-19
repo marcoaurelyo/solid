@@ -1,13 +1,13 @@
-﻿namespace Daycoval.Solid.Domain.Services
-{
-    public class SmsService
-    {
-        public string Celular { get; set; }
-        public string Mensagem { get; set; }
+﻿using System.Collections.Generic;
 
-        public void EnviarSms()
+namespace Daycoval.Solid.Domain.Services
+{
+    public class SmsService : INotificar
+    {
+        public void enviar(string toAddress, string message)
         {
             //Este método não precisa ser implementado.
         }
+
     }
 }
