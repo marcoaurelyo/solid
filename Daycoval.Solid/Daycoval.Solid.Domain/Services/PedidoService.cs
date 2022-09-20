@@ -9,7 +9,7 @@ using Daycoval.Solid.Domain.Services.Estoque;
 
 namespace Daycoval.Solid.Domain.Services
 {
-    public class Pedido
+    public class PedidoServices
     {
         IEstoque _estoqueService;
         IImposto _imposto;
@@ -20,7 +20,7 @@ namespace Daycoval.Solid.Domain.Services
         IPagamentoCartao _pagamentoCartaoService;
         IPagamento _pagamentoDinheiroService;
 
-        public Pedido(IEstoque estoqueService, IEmailMessage emailMessageService, INotificar smsService, IPagamentoCartao pagamentoCartaoService,IPagamento pagamentoDinheiroService)
+        public PedidoServices(IEstoque estoqueService, IEmailMessage emailMessageService, INotificar smsService, IPagamentoCartao pagamentoCartaoService,IPagamento pagamentoDinheiroService)
         {
             this._estoqueService = estoqueService;
             this._emailMessageService = emailMessageService;
@@ -67,7 +67,6 @@ namespace Daycoval.Solid.Domain.Services
             RealizarNotificacao(carrinho, notificarClienteEmail, notificarClienteSms);
         }
 
-
         private void CalcularImposto(Carrinho carrinho)
         {
             foreach (var produto in carrinho.Produtos)
@@ -107,9 +106,6 @@ namespace Daycoval.Solid.Domain.Services
             if (detalhePagamento.FormaPagamento.Equals(FormaPagamento.CartaoCredito) ||
       detalhePagamento.FormaPagamento.Equals(FormaPagamento.CartaoDebito))
             {
-                this._pagamentoCartaoService.Login = "login";
-                this._pagamentoCartaoService.Senha = "senha";
-                this._pagamentoCartaoService.FormaPagamentoCartao = (FormaPagamentoCartao)detalhePagamento.FormaPagamento;
                 this._pagamentoCartaoService.NomeImpresso = detalhePagamento.NomeImpressoCartao;
                 this._pagamentoCartaoService.AnoExpiracao = detalhePagamento.AnoExpiracao;
                 this._pagamentoCartaoService.MesExpiracao = detalhePagamento.MesExpiracao;
@@ -147,9 +143,8 @@ namespace Daycoval.Solid.Domain.Services
                 }
             }
         }
-        
 
-        private decimal CalcularValorTotalPedido(Produto produto)
+        public decimal CalcularValorTotalPedido(Produto produto)
         {
             return (produto.Valor + produto.ValorImposto) * produto.Quantidade;
         }
