@@ -9,7 +9,7 @@ using Daycoval.Solid.Domain.Services.Estoque;
 
 namespace Daycoval.Solid.Domain.Services
 {
-    public class PedidoServices
+    public class PedidoService
     {
         IEstoque _estoqueService;
         IImposto _imposto;
@@ -20,7 +20,7 @@ namespace Daycoval.Solid.Domain.Services
         IPagamentoCartao _pagamentoCartaoService;
         IPagamento _pagamentoDinheiroService;
 
-        public PedidoServices(IEstoque estoqueService, IEmailMessage emailMessageService, INotificar smsService, IPagamentoCartao pagamentoCartaoService,IPagamento pagamentoDinheiroService)
+        public PedidoService(IEstoque estoqueService, IEmailMessage emailMessageService, INotificar smsService, IPagamentoCartao pagamentoCartaoService,IPagamento pagamentoDinheiroService)
         {
             this._estoqueService = estoqueService;
             this._emailMessageService = emailMessageService;
@@ -35,6 +35,7 @@ namespace Daycoval.Solid.Domain.Services
             //Utilzado Strategy Pattern 
             CalcularImposto(carrinho);
 
+            //Poderia melhorar usando Factory Pattern
             if (RealizarPagamento(detalhePagamento, carrinho.ValorTotalPedido))
                 InformarPagamento(carrinho);
 
@@ -101,7 +102,7 @@ namespace Daycoval.Solid.Domain.Services
                 }
             }
         }
-        public bool RealizarPagamento(DetalhePagamento detalhePagamento, decimal valorPedido)
+        private bool RealizarPagamento(DetalhePagamento detalhePagamento, decimal valorPedido)
         {
             if (detalhePagamento.FormaPagamento.Equals(FormaPagamento.CartaoCredito) ||
       detalhePagamento.FormaPagamento.Equals(FormaPagamento.CartaoDebito))
@@ -124,7 +125,7 @@ namespace Daycoval.Solid.Domain.Services
 
             return false;
         }
-        public void RealizarNotificacao(Carrinho carrinho, bool notificarClienteEmail, bool notificarClienteSms)
+        private void RealizarNotificacao(Carrinho carrinho, bool notificarClienteEmail, bool notificarClienteSms)
         {
             if (notificarClienteEmail)
             {
@@ -144,7 +145,7 @@ namespace Daycoval.Solid.Domain.Services
             }
         }
 
-        public decimal CalcularValorTotalPedido(Produto produto)
+        private decimal CalcularValorTotalPedido(Produto produto)
         {
             return (produto.Valor + produto.ValorImposto) * produto.Quantidade;
         }

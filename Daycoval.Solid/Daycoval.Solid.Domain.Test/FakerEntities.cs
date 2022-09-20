@@ -1,10 +1,7 @@
 ﻿using Bogus;
 using Bogus.Extensions.Brazil;
 using Daycoval.Solid.Domain.Entidades;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Daycoval.Solid.Domain.Test
 {
