@@ -107,6 +107,7 @@ namespace Daycoval.Solid.Domain.Services
             if (detalhePagamento.FormaPagamento.Equals(FormaPagamento.CartaoCredito) ||
       detalhePagamento.FormaPagamento.Equals(FormaPagamento.CartaoDebito))
             {
+                this._pagamentoCartaoService = new GatewayPagamentoCartaoService();
                 this._pagamentoCartaoService.NomeImpresso = detalhePagamento.NomeImpressoCartao;
                 this._pagamentoCartaoService.AnoExpiracao = detalhePagamento.AnoExpiracao;
                 this._pagamentoCartaoService.MesExpiracao = detalhePagamento.MesExpiracao;
@@ -119,6 +120,7 @@ namespace Daycoval.Solid.Domain.Services
 
             if (detalhePagamento.FormaPagamento.Equals(FormaPagamento.Dinheiro))
             {
+                this._pagamentoDinheiroService = new GatewayPagamentoDinheiroService();
                 this._pagamentoDinheiroService.EfetuarPagamento();
                 return true;
             }

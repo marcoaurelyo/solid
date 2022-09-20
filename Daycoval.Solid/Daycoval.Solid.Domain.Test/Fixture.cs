@@ -6,17 +6,22 @@ namespace Daycoval.Solid.Domain.Test
 {
     public class Fixture
     {
+        public Mock<IEstoque> _estoqueServiceMock;
+        public Mock<IEmailMessage> _emailMessageMock;
+        public Mock<INotificar> _smsService;
+        public Mock<IPagamentoCartao> _pagamentoCartaoService;
+        public Mock<IPagamento> _pagamentoDinheiroService;
         public PedidoService CreatePedidoService()
         {
-            var estoqueServiceMock = new Mock<IEstoque>();
+            _estoqueServiceMock = new Mock<IEstoque>();
 
-            var emailMessageMock = new Mock<IEmailMessage>();
-            var smsService = new Mock<INotificar>();
+            _emailMessageMock = new Mock<IEmailMessage>();
+            _smsService = new Mock<INotificar>();
 
-            var pagamentoCartaoService = new Mock<IPagamentoCartao>();
-            var pagamentoDinheiroService = new Mock<IPagamento>();
+            _pagamentoCartaoService = new Mock<IPagamentoCartao>();
+            _pagamentoDinheiroService = new Mock<IPagamento>();
 
-            return new PedidoService(estoqueServiceMock.Object, emailMessageMock.Object, smsService.Object, pagamentoCartaoService.Object, pagamentoDinheiroService.Object);
+            return new PedidoService(_estoqueServiceMock.Object, _emailMessageMock.Object, _smsService.Object, _pagamentoCartaoService.Object, _pagamentoDinheiroService.Object);
 
         }
     }
