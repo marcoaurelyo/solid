@@ -20,7 +20,7 @@ namespace Daycoval.Solid.Domain.Test
         {
             var faker = new Faker<Carrinho>();
             faker.RuleFor(m => m.Cliente, ClienteFaker());
-            faker.RuleFor(m => m.Produtos, f => new List<Produto> { f.PickRandom(ProdutoFaker()), f.PickRandom(ProdutoFaker()), f.PickRandom(ProdutoFaker()) });
+            faker.RuleFor(m => m.Produtos, f => new List<ProdutoBase> { f.PickRandom(ProdutoAlimentoFaker().Generate()), f.PickRandom(ProdutoEletronicoFaker().Generate()), f.PickRandom(ProdutoSuperfulosFaker().Generate()) });
 
             return faker;
         }
@@ -56,13 +56,33 @@ namespace Daycoval.Solid.Domain.Test
             return faker;
         }
 
-        private Faker<Produto> ProdutoFaker()
+ 
+        private Faker<ProdutoAlimento> ProdutoAlimentoFaker()
         {
-            var faker = new Faker<Produto>();
+            var faker = new Faker<ProdutoAlimento>();
             faker.RuleFor(m => m.Descricao, f => f.Lorem.Sentences(1));
             faker.RuleFor(m => m.Quantidade, f => f.Random.Int(1, 100));
             faker.RuleFor(m => m.Valor, f => f.Finance.Amount(1, 1000));
-            faker.RuleFor(m => m.TipoProduto, f => f.PickRandom<TipoProduto>());
+
+            return faker;
+        }
+
+        private Faker<ProdutoEletronico> ProdutoEletronicoFaker()
+        {
+            var faker = new Faker<ProdutoEletronico>();
+            faker.RuleFor(m => m.Descricao, f => f.Lorem.Sentences(1));
+            faker.RuleFor(m => m.Quantidade, f => f.Random.Int(1, 100));
+            faker.RuleFor(m => m.Valor, f => f.Finance.Amount(1, 1000));
+
+            return faker;
+        }
+
+        private Faker<ProdutoSuperfulos> ProdutoSuperfulosFaker()
+        {
+            var faker = new Faker<ProdutoSuperfulos>();
+            faker.RuleFor(m => m.Descricao, f => f.Lorem.Sentences(1));
+            faker.RuleFor(m => m.Quantidade, f => f.Random.Int(1, 100));
+            faker.RuleFor(m => m.Valor, f => f.Finance.Amount(1, 1000));
 
             return faker;
         }

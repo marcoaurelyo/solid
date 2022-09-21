@@ -4,6 +4,6 @@ namespace Daycoval.Solid.Domain.Services.Pagamento
 {
     public interface IPagamento
     {
-        bool RealizarPagamento(DetalhePagamento detalhePagamento, decimal valorTotalpedido);
+        void RealizarPagamento(Carrinho carrinho, DetalhePagamento detalhePagamento);
     }
 }

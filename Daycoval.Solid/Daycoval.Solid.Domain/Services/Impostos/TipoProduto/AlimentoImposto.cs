@@ -1,9 +1,6 @@
-﻿using Daycoval.Solid.Domain.Entidades;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Daycoval.Solid.Domain.Services;
 
-namespace Daycoval.Solid.Domain.Impostos.TipoProduto
+namespace Daycoval.Solid.Domain.Impostos
 {
     public class AlimentoImposto : IImpostoTipo
     {

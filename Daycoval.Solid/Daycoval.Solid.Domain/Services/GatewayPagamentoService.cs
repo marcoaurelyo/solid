@@ -5,7 +5,7 @@ namespace Daycoval.Solid.Domain.Services
 {
     public class GatewayPagamentoService : IPagamento
     {
-        public bool RealizarPagamento(DetalhePagamento detalhePagamento, decimal valorPedido)
+        public void RealizarPagamento(Carrinho carrinho, DetalhePagamento detalhePagamento)
         {
             if (detalhePagamento.FormaPagamento.Equals(FormaPagamento.CartaoCredito) ||
       detalhePagamento.FormaPagamento.Equals(FormaPagamento.CartaoDebito))
@@ -14,21 +14,24 @@ namespace Daycoval.Solid.Domain.Services
                 _pagamentoCartaoService.NomeImpresso = detalhePagamento.NomeImpressoCartao;
                 _pagamentoCartaoService.AnoExpiracao = detalhePagamento.AnoExpiracao;
                 _pagamentoCartaoService.MesExpiracao = detalhePagamento.MesExpiracao;
-                _pagamentoCartaoService.Valor = valorPedido;
+                _pagamentoCartaoService.Valor = carrinho.ValorTotalPedido;
 
                 _pagamentoCartaoService.EfetuarPagamento();
-
-                return true;
+                InformarPagamento(carrinho);
             }
 
             if (detalhePagamento.FormaPagamento.Equals(FormaPagamento.Dinheiro))
             {
                 var _pagamentoDinheiroService = new GatewayPagamentoDinheiroService();
                 _pagamentoDinheiroService.EfetuarPagamento();
-                return true;
+                InformarPagamento(carrinho);
             }
+        }
 
-            return false;
+        private void InformarPagamento(Carrinho carrinho)
+        {
+            carrinho.FoiPago = true;
         }
     }
 }
+

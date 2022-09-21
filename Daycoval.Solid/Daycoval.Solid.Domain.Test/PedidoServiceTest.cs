@@ -83,27 +83,7 @@ namespace Daycoval.Solid.Domain.Test
 
             pedidoService.EfetuarPedido(fakerCarrinhoEntity, fakerDetalhePagamentoEntity, notificarClienteEmail, notificarSms);
 
-            //fixture._notificarService.Setup(x=>x.)
             fixture._notificarMock.Verify(em => em.RealizarNotificacao(It.IsAny<Cliente>(), It.IsAny<bool>(), It.IsAny<bool>()), Times.Once);
-        }
-
-        [Fact]
-        public void ValidBaixarEstoque_EfetuarPedido_ReturnExecuteBaixarEstoque()
-        {
-
-            var fakeEntities = new FakerEntities();
-            var fakerCarrinhoEntity = fakeEntities.fakerCarrinhoEntity.Generate();
-            var fakerDetalhePagamentoEntity = fakeEntities.fakerDetalhamentoPagamentoEntity.Generate();
-
-            var fixture = new Fixture();
-            var pedidoService = fixture.CreatePedidoService();
-
-            var notificarClienteEmail = true;
-            var notificarSms = false;
-
-            pedidoService.EfetuarPedido(fakerCarrinhoEntity, fakerDetalhePagamentoEntity, notificarClienteEmail, notificarSms);
-
-            fixture._estoqueMock.Verify(em => em.BaixarEstoque(It.IsAny<Produto>()), Times.AtLeastOnce);
         }
        
     }

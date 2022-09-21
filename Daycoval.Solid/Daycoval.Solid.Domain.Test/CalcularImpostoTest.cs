@@ -1,9 +1,4 @@
 ﻿using Daycoval.Solid.Domain.Impostos;
-using Daycoval.Solid.Domain.Impostos.TipoProduto;
-using Moq;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using Xunit;
 
 namespace Daycoval.Solid.Domain.Test

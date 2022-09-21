@@ -9,18 +9,15 @@ namespace Daycoval.Solid.Domain.Services
 {
     public class PedidoService
     {
-        IImpostoFactory _impostoFactory;
         IPagamento _pagamento;
         IEstoque _estoqueService;
         INotificar _notificar;
 
-        public PedidoService(IImpostoFactory impostoFactory,
-                             IPagamento pagamento,
+        public PedidoService(IPagamento pagamento,
                              IEstoque estoqueService,
                              INotificar notificar)
         {
             this._estoqueService = estoqueService;
-            this._impostoFactory = impostoFactory;
             this._pagamento = pagamento;
             this._notificar = notificar;
         }
@@ -30,68 +27,25 @@ namespace Daycoval.Solid.Domain.Services
         {
             Validacao(carrinho, detalhePagamento);
 
+            carrinho.RealizaCalculoImposto();
 
-            //Não existe mas nenhuma implementação concreta de imposto na classe PedidoService
-            IImposto imposto = _impostoFactory.GetObjectImposto();
-            if (carrinho.Produtos != null)
-                carrinho.Produtos.ForEach(x => x.ValorImposto = imposto.RealizaCalculo(x));
+            carrinho.CalcularValorTotalPedido();
 
-            CalcularValorTotalPedido(carrinho);
+            _pagamento.RealizarPagamento(carrinho, detalhePagamento);
 
-            if (_pagamento.RealizarPagamento(detalhePagamento, carrinho.ValorTotalPedido))
-                InformarPagamento(carrinho);
+            _estoqueService.VerificarCarrinho(carrinho);
 
-            if (carrinho.FoiPago)
-            {
-                foreach (var produto in carrinho.Produtos)
-                {
-                    _estoqueService.SolicitarProduto(produto);
-                }
-
-                EntregarProdutos(carrinho);
-            }
-            else
-            {
-                throw new ExternalException("O pagamento não foi efetuado.");
-            }
-
-            if (carrinho.FoiEntregue)
-            {
-                foreach (var produto in carrinho.Produtos)
-                {
-                    _estoqueService.BaixarEstoque(produto);
-                }
-            }
-            else
-            {
-                throw new ExternalException("Os produtos não foram entregues.");
-            }
-
-            if (carrinho.Cliente != null)
-                _notificar.RealizarNotificacao(carrinho.Cliente, notificarClienteEmail, notificarClienteSms);
+            _estoqueService.BaixarEstoque(carrinho);
+            
+            _notificar.RealizarNotificacao(carrinho.Cliente, notificarClienteEmail, notificarClienteSms);
         }
-
         private void Validacao(Carrinho carrinho, DetalhePagamento detalhePagamento)
         {
             if (carrinho == null || carrinho.Produtos == null || carrinho.Cliente == null || detalhePagamento == null)
                 throw new ExternalException("Parametros obrigratóris");
         }
 
-        public void CalcularValorTotalPedido(Carrinho carrinho)
-        {
-            carrinho.Produtos.ForEach(x => carrinho.ValorTotalPedido += CalularValorTotalProduto(x));
-        }
-        private decimal CalularValorTotalProduto(Produto produto)
-        {
-            return (produto.Valor + produto.ValorImposto) * produto.Quantidade;
-        }
-        private void EntregarProdutos(Carrinho carrinho)
-        {
-            carrinho.FoiEntregue = true;
-        }
-        private void InformarPagamento(Carrinho carrinho)
-        {
-            carrinho.FoiPago = true;
-        }
+
+
     }
 }
