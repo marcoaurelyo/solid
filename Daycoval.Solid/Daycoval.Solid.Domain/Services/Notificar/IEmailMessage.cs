@@ -1,6 +1,6 @@
 ﻿namespace Daycoval.Solid.Domain.Services
 {
-    public interface IEmailMessage : INotificar
+    public interface IEmailMessage : INotificacao
     {
         string Subject { get; set; }
     }

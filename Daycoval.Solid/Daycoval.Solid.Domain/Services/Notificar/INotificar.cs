@@ -1,7 +1,12 @@
-﻿namespace Daycoval.Solid.Domain.Services
+﻿using Daycoval.Solid.Domain.Entidades;
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace Daycoval.Solid.Domain.Services.Notificar
 {
     public interface INotificar
     {
-        void enviar(string toAddress, string message);
+        void RealizarNotificacao(Cliente cliente, bool notificarClienteEmail, bool notificarClienteSms);
     }
 }

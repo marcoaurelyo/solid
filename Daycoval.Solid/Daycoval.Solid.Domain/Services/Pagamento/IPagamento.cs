@@ -1,7 +1,9 @@
-﻿namespace Daycoval.Solid.Domain.Services
+﻿using Daycoval.Solid.Domain.Entidades;
+
+namespace Daycoval.Solid.Domain.Services.Pagamento
 {
     public interface IPagamento
     {
-        void EfetuarPagamento();
+        bool RealizarPagamento(DetalhePagamento detalhePagamento, decimal valorTotalpedido);
     }
 }

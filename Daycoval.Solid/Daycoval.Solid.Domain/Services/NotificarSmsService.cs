@@ -1,8 +1,6 @@
-﻿using System.Collections.Generic;
-
-namespace Daycoval.Solid.Domain.Services
+﻿namespace Daycoval.Solid.Domain.Services
 {
-    public class SmsService : INotificar
+    public class NotificarSmsService : INotificacao
     {
         public void enviar(string toAddress, string message)
         {

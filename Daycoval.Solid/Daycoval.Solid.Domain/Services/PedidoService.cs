@@ -1,42 +1,40 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net.Mail;
-using System.Runtime.InteropServices;
-using Daycoval.Solid.Domain.Entidades;
-using Daycoval.Solid.Domain.Impostos;
-using Daycoval.Solid.Domain.Impostos.TipoProduto;
+﻿using Daycoval.Solid.Domain.Entidades;
 using Daycoval.Solid.Domain.Services.Estoque;
+using Daycoval.Solid.Domain.Services.Impostos;
+using Daycoval.Solid.Domain.Services.Notificar;
+using Daycoval.Solid.Domain.Services.Pagamento;
+using System.Runtime.InteropServices;
 
 namespace Daycoval.Solid.Domain.Services
 {
     public class PedidoService
     {
+        IImpostoFactory _impostoFactory;
+        IPagamento _pagamento;
         IEstoque _estoqueService;
-        IImposto _imposto;
-
-        IEmailMessage _emailMessageService;
-        INotificar _smsService;
-
-        IPagamentoCartao _pagamentoCartaoService;
-        IPagamento _pagamentoDinheiroService;
-
-        public PedidoService(IEstoque estoqueService, IEmailMessage emailMessageService, INotificar smsService, IPagamentoCartao pagamentoCartaoService,IPagamento pagamentoDinheiroService)
+        INotificar _notificar;
+   
+        public PedidoService( IImpostoFactory impostoFactory,
+                             IPagamento pagamento,
+                             IEstoque estoqueService,
+                             INotificar notificar)
         {
             this._estoqueService = estoqueService;
-            this._emailMessageService = emailMessageService;
-            this._smsService = smsService;
-            this._pagamentoCartaoService = pagamentoCartaoService;
-            this._pagamentoDinheiroService = pagamentoDinheiroService;
+            this._impostoFactory = impostoFactory;
+            this._pagamento = pagamento;
+            this._notificar = notificar;
         }
 
         public void EfetuarPedido(Carrinho carrinho, DetalhePagamento detalhePagamento, bool notificarClienteEmail,
             bool notificarClienteSms)
         {
-            //Utilzado Strategy Pattern 
-            CalcularImposto(carrinho);
+            //Não existe mas nenhuma implementação concreta de imposto na classe PedidoService
+            IImposto imposto = _impostoFactory.GetObjectImposto();
+            carrinho.Produtos.ForEach(x => x.ValorImposto = imposto.RealizaCalculo(x));
 
-            //Poderia melhorar usando Factory Pattern
-            if (RealizarPagamento(detalhePagamento, carrinho.ValorTotalPedido))
+            CalcularValorTotalPedido(carrinho);
+
+            if (_pagamento.RealizarPagamento(detalhePagamento, carrinho.ValorTotalPedido))
                 InformarPagamento(carrinho);
 
             if (carrinho.FoiPago)
@@ -65,89 +63,15 @@ namespace Daycoval.Solid.Domain.Services
                 throw new ExternalException("Os produtos não foram entregues.");
             }
 
-            RealizarNotificacao(carrinho, notificarClienteEmail, notificarClienteSms);
+            if (carrinho.Cliente != null)
+                _notificar.RealizarNotificacao(carrinho.Cliente, notificarClienteEmail, notificarClienteSms);
         }
 
-        private void CalcularImposto(Carrinho carrinho)
+        public void CalcularValorTotalPedido(Carrinho carrinho)
         {
-            foreach (var produto in carrinho.Produtos)
-            {
-                if (produto.TipoProduto == TipoProduto.Alimentos)
-                {
-                    _imposto = new AlimentoImposto();
-                    produto.ValorImposto = _imposto.CalcularImposto(produto.Valor);
-                    carrinho.ValorTotalPedido += CalcularValorTotalPedido(produto);
-                }
-                else
-                {
-                    if (produto.TipoProduto == TipoProduto.Eletronico)
-                    {
-                        _imposto = new EletronicoImposto();
-                        produto.ValorImposto = _imposto.CalcularImposto(produto.Valor);
-                        carrinho.ValorTotalPedido += CalcularValorTotalPedido(produto);
-                    }
-                    else
-                    {
-                        if (produto.TipoProduto == TipoProduto.Superfulos)
-                        {
-                            _imposto = new SuperfulosImposto();
-                            produto.ValorImposto = _imposto.CalcularImposto(produto.Valor);
-                            carrinho.ValorTotalPedido += CalcularValorTotalPedido(produto);
-                        }
-                        else
-                        {
-                            throw new ArgumentException("O tipo de produto informado não está disponível.");
-                        }
-                    }
-                }
-            }
+            carrinho.Produtos.ForEach(x => carrinho.ValorTotalPedido += CalularValorTotalProduto(x));
         }
-        private bool RealizarPagamento(DetalhePagamento detalhePagamento, decimal valorPedido)
-        {
-            if (detalhePagamento.FormaPagamento.Equals(FormaPagamento.CartaoCredito) ||
-      detalhePagamento.FormaPagamento.Equals(FormaPagamento.CartaoDebito))
-            {
-                this._pagamentoCartaoService = new GatewayPagamentoCartaoService();
-                this._pagamentoCartaoService.NomeImpresso = detalhePagamento.NomeImpressoCartao;
-                this._pagamentoCartaoService.AnoExpiracao = detalhePagamento.AnoExpiracao;
-                this._pagamentoCartaoService.MesExpiracao = detalhePagamento.MesExpiracao;
-                this._pagamentoCartaoService.Valor = valorPedido;
-
-                this._pagamentoCartaoService.EfetuarPagamento();
-
-                return true;
-            }
-
-            if (detalhePagamento.FormaPagamento.Equals(FormaPagamento.Dinheiro))
-            {
-                this._pagamentoDinheiroService = new GatewayPagamentoDinheiroService();
-                this._pagamentoDinheiroService.EfetuarPagamento();
-                return true;
-            }
-
-            return false;
-        }
-        private void RealizarNotificacao(Carrinho carrinho, bool notificarClienteEmail, bool notificarClienteSms)
-        {
-            if (notificarClienteEmail)
-            {
-                if (!string.IsNullOrWhiteSpace(carrinho.Cliente.Email))
-                {
-                    this._emailMessageService.Subject = "Dados da sua compra";
-                    this._emailMessageService.enviar(carrinho.Cliente.Email, $"Obrigado por efetuar sua compra conosco.");
-                }
-            }
-
-            if (notificarClienteSms)
-            {
-                if (!string.IsNullOrWhiteSpace(carrinho.Cliente.Celular))
-                {
-                    this._smsService.enviar(carrinho.Cliente.Celular, "Obrigado por sua compra");
-                }
-            }
-        }
-
-        private decimal CalcularValorTotalPedido(Produto produto)
+        private decimal CalularValorTotalProduto(Produto produto)
         {
             return (produto.Valor + produto.ValorImposto) * produto.Quantidade;
         }

@@ -1,27 +1,34 @@
 ﻿using Daycoval.Solid.Domain.Services;
 using Daycoval.Solid.Domain.Services.Estoque;
+using Daycoval.Solid.Domain.Services.Impostos;
+using Daycoval.Solid.Domain.Services.Notificar;
+using Daycoval.Solid.Domain.Services.Pagamento;
 using Moq;
 
 namespace Daycoval.Solid.Domain.Test
 {
     public class Fixture
     {
-        public Mock<IEstoque> _estoqueServiceMock;
-        public Mock<IEmailMessage> _emailMessageMock;
-        public Mock<INotificar> _smsService;
-        public Mock<IPagamentoCartao> _pagamentoCartaoService;
-        public Mock<IPagamento> _pagamentoDinheiroService;
+       
+        public Mock<ImpostoFactory> _impostoMock;
+        public Mock<GatewayPagamentoService> _pagamentoMock;
+        public Mock<IEstoque> _estoqueMock;
+        public Mock<INotificar> _notificarMock;
+
+       
         public PedidoService CreatePedidoService()
         {
-            _estoqueServiceMock = new Mock<IEstoque>();
+          
+            _impostoMock = new Mock<ImpostoFactory>();
+            _pagamentoMock = new Mock<GatewayPagamentoService>();
+            _estoqueMock = new Mock<IEstoque>();
+            _notificarMock = new Mock<INotificar>();
 
-            _emailMessageMock = new Mock<IEmailMessage>();
-            _smsService = new Mock<INotificar>();
-
-            _pagamentoCartaoService = new Mock<IPagamentoCartao>();
-            _pagamentoDinheiroService = new Mock<IPagamento>();
-
-            return new PedidoService(_estoqueServiceMock.Object, _emailMessageMock.Object, _smsService.Object, _pagamentoCartaoService.Object, _pagamentoDinheiroService.Object);
+           
+            return new PedidoService(_impostoMock.Object, 
+                                     _pagamentoMock.Object, 
+                                     _estoqueMock.Object,
+                                     _notificarMock.Object);
 
         }
     }

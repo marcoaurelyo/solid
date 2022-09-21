@@ -1,12 +1,13 @@
 ﻿using Daycoval.Solid.Domain.Entidades;
+using Daycoval.Solid.Domain.Impostos;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Daycoval.Solid.Domain.Impostos
+namespace Daycoval.Solid.Domain.Services.Impostos
 {
-    public interface  IImposto
+    public interface IImposto
     {
-        decimal CalcularImposto(decimal valoProduto);
+        decimal RealizaCalculo(Produto produto);
     }
 }

@@ -1,8 +1,9 @@
-﻿using System.Net.Mail;
+﻿using System;
+using System.Net.Mail;
 
 namespace Daycoval.Solid.Domain.Services
 {
-    public class EmailService : IEmailMessage
+    public class NotificarEmailService : IEmailMessage
     {
         private const string fromEmail = "tiago.dantas@bancodaycoval.com.br";
         private const string typeClient = "servidor.smtp";
@@ -10,6 +11,7 @@ namespace Daycoval.Solid.Domain.Services
 
         public void enviar(string toAddress, string message)
         {
+      
             using (var msg = new MailMessage(fromEmail, toAddress))
             using (var smtp = new SmtpClient(typeClient))
             {
@@ -17,7 +19,7 @@ namespace Daycoval.Solid.Domain.Services
                 msg.Body = message;
 
                 smtp.Send(msg);
-            }
+            }  
         }
     }
 }

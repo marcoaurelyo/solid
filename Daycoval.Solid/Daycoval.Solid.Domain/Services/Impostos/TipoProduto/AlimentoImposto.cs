@@ -5,12 +5,17 @@ using System.Text;
 
 namespace Daycoval.Solid.Domain.Impostos.TipoProduto
 {
-    public class AlimentoImposto : IImposto
+    public class AlimentoImposto : IImpostoTipo
     {
         private const decimal aliquota = 0.05M;
         public decimal CalcularImposto(decimal produto)
         {
-           return produto * aliquota;
+           return produto * getTaxasAlimento();
+        }
+
+        public decimal getTaxasAlimento()
+        {
+            return aliquota;
         }
     }
 }

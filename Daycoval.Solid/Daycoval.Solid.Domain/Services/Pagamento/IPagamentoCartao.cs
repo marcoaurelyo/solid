@@ -2,7 +2,7 @@
 
 namespace Daycoval.Solid.Domain.Services
 {
-    public interface IPagamentoCartao : IPagamento
+    public interface IPagamentoCartao : IFormaPagamento
     {
         string NomeImpresso { get; set; }
         decimal Valor { get; set; }

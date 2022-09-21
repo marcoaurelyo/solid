@@ -1,6 +1,6 @@
 ﻿namespace Daycoval.Solid.Domain.Services
 {
-    public class GatewayPagamentoDinheiroService : IPagamento
+    public class GatewayPagamentoDinheiroService : IFormaPagamento
     {
         public void EfetuarPagamento()
         {
