@@ -13,8 +13,8 @@ namespace Daycoval.Solid.Domain.Services
         IPagamento _pagamento;
         IEstoque _estoqueService;
         INotificar _notificar;
-   
-        public PedidoService( IImpostoFactory impostoFactory,
+
+        public PedidoService(IImpostoFactory impostoFactory,
                              IPagamento pagamento,
                              IEstoque estoqueService,
                              INotificar notificar)
@@ -28,9 +28,13 @@ namespace Daycoval.Solid.Domain.Services
         public void EfetuarPedido(Carrinho carrinho, DetalhePagamento detalhePagamento, bool notificarClienteEmail,
             bool notificarClienteSms)
         {
+            Validacao(carrinho, detalhePagamento);
+
+
             //Não existe mas nenhuma implementação concreta de imposto na classe PedidoService
             IImposto imposto = _impostoFactory.GetObjectImposto();
-            carrinho.Produtos.ForEach(x => x.ValorImposto = imposto.RealizaCalculo(x));
+            if (carrinho.Produtos != null)
+                carrinho.Produtos.ForEach(x => x.ValorImposto = imposto.RealizaCalculo(x));
 
             CalcularValorTotalPedido(carrinho);
 
@@ -65,6 +69,12 @@ namespace Daycoval.Solid.Domain.Services
 
             if (carrinho.Cliente != null)
                 _notificar.RealizarNotificacao(carrinho.Cliente, notificarClienteEmail, notificarClienteSms);
+        }
+
+        private void Validacao(Carrinho carrinho, DetalhePagamento detalhePagamento)
+        {
+            if (carrinho == null || carrinho.Produtos == null || carrinho.Cliente == null || detalhePagamento == null)
+                throw new ExternalException("Parametros obrigratóris");
         }
 
         public void CalcularValorTotalPedido(Carrinho carrinho)
